@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 # define deployment behaviour based on supplied app spec
 def deploy() -> None:
     from smart_contracts.artifacts.supply_chain_tracer.supply_chain_tracer_client import (
-        HelloArgs,
         SupplyChainTracerFactory,
     )
 
@@ -36,9 +35,6 @@ def deploy() -> None:
             )
         )
 
-    name = "world"
-    response = app_client.send.hello(args=HelloArgs(name=name))
     logger.info(
         f"Called hello on {app_client.app_name} ({app_client.app_id}) "
-        f"with name={name}, received: {response.abi_return}"
     )
