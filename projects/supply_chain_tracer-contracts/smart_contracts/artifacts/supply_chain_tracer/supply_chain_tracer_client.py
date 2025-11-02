@@ -19,7 +19,7 @@ from algosdk.v2client.models import SimulateTraceConfig
 import algokit_utils
 from algokit_utils import AlgorandClient as _AlgoKitAlgorandClient
 
-_APP_SPEC_JSON = r"""{"arcs": [22, 28], "bareActions": {"call": [], "create": ["NoOp"]}, "methods": [{"actions": {"call": ["NoOp"], "create": []}, "args": [{"type": "address", "name": "account"}], "name": "authorize", "returns": {"type": "void"}, "desc": "Grant write permission to an account.\nOnly the contract creator may do this.", "events": [], "readonly": false, "recommendations": {}}, {"actions": {"call": ["NoOp"], "create": []}, "args": [{"type": "address", "name": "account"}], "name": "revoke", "returns": {"type": "void"}, "desc": "Remove write permission from an account.", "events": [], "readonly": false, "recommendations": {}}, {"actions": {"call": ["NoOp"], "create": []}, "args": [{"type": "byte[]", "name": "first_record"}], "name": "register_batch", "returns": {"type": "uint64"}, "desc": "Create a new batch entry.\nAssigns an incremental batch_id and stores initial metadata.", "events": [], "readonly": false, "recommendations": {}}, {"actions": {"call": ["NoOp"], "create": []}, "args": [{"type": "uint64", "name": "batch_id"}, {"type": "byte[]", "name": "new_data"}], "name": "record_event", "returns": {"type": "void"}, "desc": "Append a new record to an existing batch.\nOnly authorized participants can call this.", "events": [], "readonly": false, "recommendations": {}}, {"actions": {"call": ["NoOp"], "create": []}, "args": [{"type": "uint64", "name": "batch_id"}], "name": "get_batch_record", "returns": {"type": "byte[]"}, "desc": "Return the full record string for a given batch.", "events": [], "readonly": false, "recommendations": {}}], "name": "SupplyChainTracer", "state": {"keys": {"box": {}, "global": {"total_batches": {"key": "dG90YWxfYmF0Y2hlcw==", "keyType": "AVMString", "valueType": "AVMUint64"}}, "local": {}}, "maps": {"box": {"batch_records": {"keyType": "uint64", "valueType": "AVMBytes", "prefix": "YmF0Y2hfcmVjb3Jkcw=="}, "authorized": {"keyType": "address", "valueType": "uint64", "prefix": "YXV0aG9yaXplZA=="}}, "global": {}, "local": {}}, "schema": {"global": {"bytes": 0, "ints": 1}, "local": {"bytes": 0, "ints": 0}}}, "structs": {}, "byteCode": {"approval": "CyAEAQAgAiYEDXRvdGFsX2JhdGNoZXMNYmF0Y2hfcmVjb3JkcwphdXRob3JpemVkBBUffHUxGEAAAygjZzEbQQAyMRkURDEYRIIFBHO8ZQEEI4MVlwRx8CV5BNtuAQIEnOBFLTYaAI4FAAsAIQA2AGgAmgAxGRQxGBQQRCJDNhoBSRUkEkQxADIJEkQqTFAiFr8iQzYaAUkVJBJEMQAyCRJEKkxQvEgiQzYaAUkjWSUISwEVEkRXAgAxADIJEkQjKGVEIghJFilLAVBJvEhPA78oTwJnK0xQsCJDNhoBSRWBCBJEFzYaAkkjWSUISwEVEkRXAgBMFilMUEm+RIADIHwgUE8CUEsBvEi/IkM2GgFJFYEIEkQXFilMUL5ESRUWVwYCTFArTFCwIkM=", "clear": "C4EBQw=="}, "events": [], "networks": {}, "source": {"approval": "I3ByYWdtYSB2ZXJzaW9uIDExCiNwcmFnbWEgdHlwZXRyYWNrIGZhbHNlCgovLyBhbGdvcHkuYXJjNC5BUkM0Q29udHJhY3QuYXBwcm92YWxfcHJvZ3JhbSgpIC0+IHVpbnQ2NDoKbWFpbjoKICAgIGludGNibG9jayAxIDAgMzIgMgogICAgYnl0ZWNibG9jayAidG90YWxfYmF0Y2hlcyIgImJhdGNoX3JlY29yZHMiICJhdXRob3JpemVkIiAweDE1MWY3Yzc1CiAgICB0eG4gQXBwbGljYXRpb25JRAogICAgYm56IG1haW5fYWZ0ZXJfaWZfZWxzZUAyCiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo2LTcKICAgIC8vICMgVHJhY2sgdG90YWwgcmVnaXN0ZXJlZCBiYXRjaGVzCiAgICAvLyBzZWxmLnRvdGFsX2JhdGNoZXMgPSBHbG9iYWxTdGF0ZShVSW50NjQoMCkpCiAgICBieXRlY18wIC8vICJ0b3RhbF9iYXRjaGVzIgogICAgaW50Y18xIC8vIDAKICAgIGFwcF9nbG9iYWxfcHV0CgptYWluX2FmdGVyX2lmX2Vsc2VAMjoKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjQKICAgIC8vIGNsYXNzIFN1cHBseUNoYWluVHJhY2VyKEFSQzRDb250cmFjdCk6CiAgICB0eG4gTnVtQXBwQXJncwogICAgYnogbWFpbl9fX2FsZ29weV9kZWZhdWx0X2NyZWF0ZUAxNAogICAgdHhuIE9uQ29tcGxldGlvbgogICAgIQogICAgYXNzZXJ0IC8vIE9uQ29tcGxldGlvbiBtdXN0IGJlIE5vT3AKICAgIHR4biBBcHBsaWNhdGlvbklECiAgICBhc3NlcnQKICAgIHB1c2hieXRlc3MgMHg3M2JjNjUwMSAweDIzODMxNTk3IDB4NzFmMDI1NzkgMHhkYjZlMDEwMiAweDljZTA0NTJkIC8vIG1ldGhvZCAiYXV0aG9yaXplKGFkZHJlc3Mpdm9pZCIsIG1ldGhvZCAicmV2b2tlKGFkZHJlc3Mpdm9pZCIsIG1ldGhvZCAicmVnaXN0ZXJfYmF0Y2goYnl0ZVtdKXVpbnQ2NCIsIG1ldGhvZCAicmVjb3JkX2V2ZW50KHVpbnQ2NCxieXRlW10pdm9pZCIsIG1ldGhvZCAiZ2V0X2JhdGNoX3JlY29yZCh1aW50NjQpYnl0ZVtdIgogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMAogICAgbWF0Y2ggYXV0aG9yaXplIHJldm9rZSByZWdpc3Rlcl9iYXRjaCByZWNvcmRfZXZlbnQgZ2V0X2JhdGNoX3JlY29yZAogICAgZXJyCgptYWluX19fYWxnb3B5X2RlZmF1bHRfY3JlYXRlQDE0OgogICAgdHhuIE9uQ29tcGxldGlvbgogICAgIQogICAgdHhuIEFwcGxpY2F0aW9uSUQKICAgICEKICAgICYmCiAgICBhc3NlcnQgLy8gT25Db21wbGV0aW9uIG11c3QgYmUgTm9PcCAmJiBjYW4gb25seSBjYWxsIHdoZW4gY3JlYXRpbmcKICAgIGludGNfMCAvLyAxCiAgICByZXR1cm4KCgovLyBzbWFydF9jb250cmFjdHMuc3VwcGx5X2NoYWluX3RyYWNlci5jb250cmFjdC5TdXBwbHlDaGFpblRyYWNlci5hdXRob3JpemVbcm91dGluZ10oKSAtPiB2b2lkOgphdXRob3JpemU6CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weToxNwogICAgLy8gQGFiaW1ldGhvZAogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQogICAgZHVwCiAgICBsZW4KICAgIGludGNfMiAvLyAzMgogICAgPT0KICAgIGFzc2VydCAvLyBpbnZhbGlkIG51bWJlciBvZiBieXRlcyBmb3IgYXJjNC5zdGF0aWNfYXJyYXk8YXJjNC51aW50OCwgMzI+CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weToyMwogICAgLy8gYXNzZXJ0IFR4bi5zZW5kZXIgPT0gR2xvYmFsLmNyZWF0b3JfYWRkcmVzcywgIk9ubHkgY3JlYXRvciBjYW4gYXV0aG9yaXplIgogICAgdHhuIFNlbmRlcgogICAgZ2xvYmFsIENyZWF0b3JBZGRyZXNzCiAgICA9PQogICAgYXNzZXJ0IC8vIE9ubHkgY3JlYXRvciBjYW4gYXV0aG9yaXplCiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weToyNAogICAgLy8gc2VsZi5hdXRob3JpemVkW2FjY291bnRdID0gVUludDY0KDEpCiAgICBieXRlY18yIC8vICJhdXRob3JpemVkIgogICAgc3dhcAogICAgY29uY2F0CiAgICBpbnRjXzAgLy8gMQogICAgaXRvYgogICAgYm94X3B1dAogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6MTcKICAgIC8vIEBhYmltZXRob2QKICAgIGludGNfMCAvLyAxCiAgICByZXR1cm4KCgovLyBzbWFydF9jb250cmFjdHMuc3VwcGx5X2NoYWluX3RyYWNlci5jb250cmFjdC5TdXBwbHlDaGFpblRyYWNlci5yZXZva2Vbcm91dGluZ10oKSAtPiB2b2lkOgpyZXZva2U6CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weToyNgogICAgLy8gQGFiaW1ldGhvZAogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQogICAgZHVwCiAgICBsZW4KICAgIGludGNfMiAvLyAzMgogICAgPT0KICAgIGFzc2VydCAvLyBpbnZhbGlkIG51bWJlciBvZiBieXRlcyBmb3IgYXJjNC5zdGF0aWNfYXJyYXk8YXJjNC51aW50OCwgMzI+CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTozMQogICAgLy8gYXNzZXJ0IFR4bi5zZW5kZXIgPT0gR2xvYmFsLmNyZWF0b3JfYWRkcmVzcywgIk9ubHkgY3JlYXRvciBjYW4gcmV2b2tlIgogICAgdHhuIFNlbmRlcgogICAgZ2xvYmFsIENyZWF0b3JBZGRyZXNzCiAgICA9PQogICAgYXNzZXJ0IC8vIE9ubHkgY3JlYXRvciBjYW4gcmV2b2tlCiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTozMgogICAgLy8gZGVsIHNlbGYuYXV0aG9yaXplZFthY2NvdW50XQogICAgYnl0ZWNfMiAvLyAiYXV0aG9yaXplZCIKICAgIHN3YXAKICAgIGNvbmNhdAogICAgYm94X2RlbAogICAgcG9wCiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weToyNgogICAgLy8gQGFiaW1ldGhvZAogICAgaW50Y18wIC8vIDEKICAgIHJldHVybgoKCi8vIHNtYXJ0X2NvbnRyYWN0cy5zdXBwbHlfY2hhaW5fdHJhY2VyLmNvbnRyYWN0LlN1cHBseUNoYWluVHJhY2VyLnJlZ2lzdGVyX2JhdGNoW3JvdXRpbmddKCkgLT4gdm9pZDoKcmVnaXN0ZXJfYmF0Y2g6CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTozOAogICAgLy8gQGFiaW1ldGhvZAogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQogICAgZHVwCiAgICBpbnRjXzEgLy8gMAogICAgZXh0cmFjdF91aW50MTYgLy8gb24gZXJyb3I6IGludmFsaWQgYXJyYXkgbGVuZ3RoIGhlYWRlcgogICAgaW50Y18zIC8vIDIKICAgICsKICAgIGRpZyAxCiAgICBsZW4KICAgID09CiAgICBhc3NlcnQgLy8gaW52YWxpZCBudW1iZXIgb2YgYnl0ZXMgZm9yIGFyYzQuZHluYW1pY19hcnJheTxhcmM0LnVpbnQ4PgogICAgZXh0cmFjdCAyIDAKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjQ0CiAgICAvLyBhc3NlcnQgVHhuLnNlbmRlciA9PSBHbG9iYWwuY3JlYXRvcl9hZGRyZXNzLCAiT25seSBjcmVhdG9yIGNhbiByZWdpc3RlciBiYXRjaGVzIgogICAgdHhuIFNlbmRlcgogICAgZ2xvYmFsIENyZWF0b3JBZGRyZXNzCiAgICA9PQogICAgYXNzZXJ0IC8vIE9ubHkgY3JlYXRvciBjYW4gcmVnaXN0ZXIgYmF0Y2hlcwogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6NDYKICAgIC8vIGJhdGNoX2lkID0gc2VsZi50b3RhbF9iYXRjaGVzLnZhbHVlICsgVUludDY0KDEpCiAgICBpbnRjXzEgLy8gMAogICAgYnl0ZWNfMCAvLyAidG90YWxfYmF0Y2hlcyIKICAgIGFwcF9nbG9iYWxfZ2V0X2V4CiAgICBhc3NlcnQgLy8gY2hlY2sgc2VsZi50b3RhbF9iYXRjaGVzIGV4aXN0cwogICAgaW50Y18wIC8vIDEKICAgICsKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjQ3CiAgICAvLyBzZWxmLmJhdGNoX3JlY29yZHNbYmF0Y2hfaWRdID0gZmlyc3RfcmVjb3JkCiAgICBkdXAKICAgIGl0b2IKICAgIGJ5dGVjXzEgLy8gImJhdGNoX3JlY29yZHMiCiAgICBkaWcgMQogICAgY29uY2F0CiAgICBkdXAKICAgIGJveF9kZWwKICAgIHBvcAogICAgdW5jb3ZlciAzCiAgICBib3hfcHV0CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo0OAogICAgLy8gc2VsZi50b3RhbF9iYXRjaGVzLnZhbHVlID0gYmF0Y2hfaWQKICAgIGJ5dGVjXzAgLy8gInRvdGFsX2JhdGNoZXMiCiAgICB1bmNvdmVyIDIKICAgIGFwcF9nbG9iYWxfcHV0CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTozOAogICAgLy8gQGFiaW1ldGhvZAogICAgYnl0ZWNfMyAvLyAweDE1MWY3Yzc1CiAgICBzd2FwCiAgICBjb25jYXQKICAgIGxvZwogICAgaW50Y18wIC8vIDEKICAgIHJldHVybgoKCi8vIHNtYXJ0X2NvbnRyYWN0cy5zdXBwbHlfY2hhaW5fdHJhY2VyLmNvbnRyYWN0LlN1cHBseUNoYWluVHJhY2VyLnJlY29yZF9ldmVudFtyb3V0aW5nXSgpIC0+IHZvaWQ6CnJlY29yZF9ldmVudDoKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjUxCiAgICAvLyBAYWJpbWV0aG9kCiAgICB0eG5hIEFwcGxpY2F0aW9uQXJncyAxCiAgICBkdXAKICAgIGxlbgogICAgcHVzaGludCA4IC8vIDgKICAgID09CiAgICBhc3NlcnQgLy8gaW52YWxpZCBudW1iZXIgb2YgYnl0ZXMgZm9yIGFyYzQudWludDY0CiAgICBidG9pCiAgICB0eG5hIEFwcGxpY2F0aW9uQXJncyAyCiAgICBkdXAKICAgIGludGNfMSAvLyAwCiAgICBleHRyYWN0X3VpbnQxNiAvLyBvbiBlcnJvcjogaW52YWxpZCBhcnJheSBsZW5ndGggaGVhZGVyCiAgICBpbnRjXzMgLy8gMgogICAgKwogICAgZGlnIDEKICAgIGxlbgogICAgPT0KICAgIGFzc2VydCAvLyBpbnZhbGlkIG51bWJlciBvZiBieXRlcyBmb3IgYXJjNC5keW5hbWljX2FycmF5PGFyYzQudWludDg+CiAgICBleHRyYWN0IDIgMAogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6NTgKICAgIC8vIG9sZF9kYXRhLCBleGlzdHMgPSBzZWxmLmJhdGNoX3JlY29yZHMubWF5YmUoYmF0Y2hfaWQpCiAgICBzd2FwCiAgICBpdG9iCiAgICBieXRlY18xIC8vICJiYXRjaF9yZWNvcmRzIgogICAgc3dhcAogICAgY29uY2F0CiAgICBkdXAKICAgIGJveF9nZXQKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjU5CiAgICAvLyBhc3NlcnQgZXhpc3RzLCAiQmF0Y2ggbm90IGZvdW5kIgogICAgYXNzZXJ0IC8vIEJhdGNoIG5vdCBmb3VuZAogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6NjEtNjIKICAgIC8vICMgQ29uY2F0ZW5hdGUgbmV3IGRhdGEgdG8gZXhpc3RpbmcgcmVjb3JkIHN0cmluZwogICAgLy8gY29tYmluZWQgPSBvbGRfZGF0YSArIEJ5dGVzKGIiIHwgIikgKyBuZXdfZGF0YQogICAgcHVzaGJ5dGVzIDB4MjA3YzIwCiAgICBjb25jYXQKICAgIHVuY292ZXIgMgogICAgY29uY2F0CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo2MwogICAgLy8gc2VsZi5iYXRjaF9yZWNvcmRzW2JhdGNoX2lkXSA9IGNvbWJpbmVkCiAgICBkaWcgMQogICAgYm94X2RlbAogICAgcG9wCiAgICBib3hfcHV0CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo1MQogICAgLy8gQGFiaW1ldGhvZAogICAgaW50Y18wIC8vIDEKICAgIHJldHVybgoKCi8vIHNtYXJ0X2NvbnRyYWN0cy5zdXBwbHlfY2hhaW5fdHJhY2VyLmNvbnRyYWN0LlN1cHBseUNoYWluVHJhY2VyLmdldF9iYXRjaF9yZWNvcmRbcm91dGluZ10oKSAtPiB2b2lkOgpnZXRfYmF0Y2hfcmVjb3JkOgogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6NjkKICAgIC8vIEBhYmltZXRob2QKICAgIHR4bmEgQXBwbGljYXRpb25BcmdzIDEKICAgIGR1cAogICAgbGVuCiAgICBwdXNoaW50IDggLy8gOAogICAgPT0KICAgIGFzc2VydCAvLyBpbnZhbGlkIG51bWJlciBvZiBieXRlcyBmb3IgYXJjNC51aW50NjQKICAgIGJ0b2kKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5Ojc0CiAgICAvLyByZWNvcmQsIGV4aXN0cyA9IHNlbGYuYmF0Y2hfcmVjb3Jkcy5tYXliZShiYXRjaF9pZCkKICAgIGl0b2IKICAgIGJ5dGVjXzEgLy8gImJhdGNoX3JlY29yZHMiCiAgICBzd2FwCiAgICBjb25jYXQKICAgIGJveF9nZXQKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5Ojc1CiAgICAvLyBhc3NlcnQgZXhpc3RzLCAiQmF0Y2ggbm90IGZvdW5kIgogICAgYXNzZXJ0IC8vIEJhdGNoIG5vdCBmb3VuZAogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6NjkKICAgIC8vIEBhYmltZXRob2QKICAgIGR1cAogICAgbGVuCiAgICBpdG9iCiAgICBleHRyYWN0IDYgMgogICAgc3dhcAogICAgY29uY2F0CiAgICBieXRlY18zIC8vIDB4MTUxZjdjNzUKICAgIHN3YXAKICAgIGNvbmNhdAogICAgbG9nCiAgICBpbnRjXzAgLy8gMQogICAgcmV0dXJuCg==", "clear": "I3ByYWdtYSB2ZXJzaW9uIDExCiNwcmFnbWEgdHlwZXRyYWNrIGZhbHNlCgovLyBhbGdvcHkuYXJjNC5BUkM0Q29udHJhY3QuY2xlYXJfc3RhdGVfcHJvZ3JhbSgpIC0+IHVpbnQ2NDoKbWFpbjoKICAgIHB1c2hpbnQgMSAvLyAxCiAgICByZXR1cm4K"}, "sourceInfo": {"approval": {"pcOffsetMethod": "none", "sourceInfo": [{"pc": [252, 284], "errorMessage": "Batch not found"}, {"pc": [69], "errorMessage": "OnCompletion must be NoOp"}, {"pc": [123], "errorMessage": "OnCompletion must be NoOp && can only call when creating"}, {"pc": [139], "errorMessage": "Only creator can authorize"}, {"pc": [190], "errorMessage": "Only creator can register batches"}, {"pc": [161], "errorMessage": "Only creator can revoke"}, {"pc": [194], "errorMessage": "check self.total_batches exists"}, {"pc": [174, 234], "errorMessage": "invalid array length header"}, {"pc": [181, 241], "errorMessage": "invalid number of bytes for arc4.dynamic_array<arc4.uint8>"}, {"pc": [133, 155], "errorMessage": "invalid number of bytes for arc4.static_array<arc4.uint8, 32>"}, {"pc": [227, 277], "errorMessage": "invalid number of bytes for arc4.uint64"}]}, "clear": {"pcOffsetMethod": "none", "sourceInfo": []}}, "templateVariables": {}}"""
+_APP_SPEC_JSON = r"""{"arcs": [22, 28], "bareActions": {"call": [], "create": ["NoOp"]}, "methods": [{"actions": {"call": ["NoOp"], "create": []}, "args": [{"type": "address", "name": "account"}], "name": "authorize", "returns": {"type": "void"}, "desc": "Grant write permission to an account.\nOnly the contract creator may do this.", "events": [], "readonly": false, "recommendations": {}}, {"actions": {"call": ["NoOp"], "create": []}, "args": [{"type": "address", "name": "account"}], "name": "revoke", "returns": {"type": "void"}, "desc": "Remove write permission from an account.", "events": [], "readonly": false, "recommendations": {}}, {"actions": {"call": ["NoOp"], "create": []}, "args": [{"type": "byte[]", "name": "first_record"}], "name": "register_batch", "returns": {"type": "uint64"}, "desc": "Create a new batch entry.\nAssigns an incremental batch_id and stores initial metadata.", "events": [], "readonly": false, "recommendations": {}}, {"actions": {"call": ["NoOp"], "create": []}, "args": [{"type": "uint64", "name": "batch_id"}, {"type": "uint64", "name": "asset_id"}], "name": "link_asset", "returns": {"type": "void"}, "desc": "Link an ASA to a batch for tracking.\nOnly the contract creator may do this.", "events": [], "readonly": false, "recommendations": {}}, {"actions": {"call": ["NoOp"], "create": []}, "args": [{"type": "uint64", "name": "batch_id"}, {"type": "byte[]", "name": "new_data"}], "name": "record_event", "returns": {"type": "void"}, "desc": "Append a new record to an existing batch.\nOnly authorized participants can call this.", "events": [], "readonly": false, "recommendations": {}}, {"actions": {"call": ["NoOp"], "create": []}, "args": [{"type": "uint64", "name": "batch_id"}], "name": "get_batch_record", "returns": {"type": "byte[]"}, "desc": "Return the full record string for a given batch.", "events": [], "readonly": false, "recommendations": {}}, {"actions": {"call": ["NoOp"], "create": []}, "args": [{"type": "uint64", "name": "batch_id"}], "name": "get_asset_for_batch", "returns": {"type": "uint64"}, "desc": "Return the linked ASA id for a given batch.", "events": [], "readonly": false, "recommendations": {}}], "name": "SupplyChainTracer", "state": {"keys": {"box": {}, "global": {"total_batches": {"key": "dG90YWxfYmF0Y2hlcw==", "keyType": "AVMString", "valueType": "AVMUint64"}}, "local": {}}, "maps": {"box": {"batch_records": {"keyType": "uint64", "valueType": "AVMBytes", "prefix": "YmF0Y2hfcmVjb3Jkcw=="}, "batch_assets": {"keyType": "uint64", "valueType": "uint64", "prefix": "YmF0Y2hfYXNzZXRz"}, "authorized": {"keyType": "address", "valueType": "uint64", "prefix": "YXV0aG9yaXplZA=="}}, "global": {}, "local": {}}, "schema": {"global": {"bytes": 0, "ints": 1}, "local": {"bytes": 0, "ints": 0}}}, "structs": {}, "byteCode": {"approval": "CyAEAQgAICYFDWJhdGNoX3JlY29yZHMNdG90YWxfYmF0Y2hlcwphdXRob3JpemVkBBUffHUMYmF0Y2hfYXNzZXRzMRhAAAMpJGcxG0EAQDEZFEQxGESCBwRzvGUBBCODFZcEcfAleQQ2oZM1BNtuAQIEnOBFLQRG+5NzNhoAjgcACwAhADsAbgCZAN0A+gAxGRQxGBQQRCJDNhoBSRUlEkQxADIJEkQqTFAiFr8iQzYaAUkVJRJEMQAyCRJEKkxQSb1FAUS8SCJDNhoBSSRZgQIISwEVEkRXAgAxADIJEkQkKWVEIghJFihLAVBJvEhPA78pTwJnK0xQsCJDNhoBSRUjEkQXNhoCSRUjEkQXMQAyCRJETBYoSwFQvUUBRCcETFBMFr8iQzYaAUkVIxJEFzYaAkkkWYECCEsBFRJEVwIAKjEAUL1FAURMFihLAVBJvkQnBE8DUL1FAUSAAyB8IFBPAlBLAbxIvyJDNhoBSRUjEkQXFihMUL5ESRUWVwYCTFArTFCwIkM2GgFJFSMSRBcWJwRMUL5MF0xEFitMULAiQw==", "clear": "C4EBQw=="}, "events": [], "networks": {}, "source": {"approval": "I3ByYWdtYSB2ZXJzaW9uIDExCiNwcmFnbWEgdHlwZXRyYWNrIGZhbHNlCgovLyBhbGdvcHkuYXJjNC5BUkM0Q29udHJhY3QuYXBwcm92YWxfcHJvZ3JhbSgpIC0+IHVpbnQ2NDoKbWFpbjoKICAgIGludGNibG9jayAxIDggMCAzMgogICAgYnl0ZWNibG9jayAiYmF0Y2hfcmVjb3JkcyIgInRvdGFsX2JhdGNoZXMiICJhdXRob3JpemVkIiAweDE1MWY3Yzc1ICJiYXRjaF9hc3NldHMiCiAgICB0eG4gQXBwbGljYXRpb25JRAogICAgYm56IG1haW5fYWZ0ZXJfaWZfZWxzZUAyCiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo2LTcKICAgIC8vICMgVHJhY2sgdG90YWwgcmVnaXN0ZXJlZCBiYXRjaGVzCiAgICAvLyBzZWxmLnRvdGFsX2JhdGNoZXMgPSBHbG9iYWxTdGF0ZShVSW50NjQoMCkpCiAgICBieXRlY18xIC8vICJ0b3RhbF9iYXRjaGVzIgogICAgaW50Y18yIC8vIDAKICAgIGFwcF9nbG9iYWxfcHV0CgptYWluX2FmdGVyX2lmX2Vsc2VAMjoKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjQKICAgIC8vIGNsYXNzIFN1cHBseUNoYWluVHJhY2VyKEFSQzRDb250cmFjdCk6CiAgICB0eG4gTnVtQXBwQXJncwogICAgYnogbWFpbl9fX2FsZ29weV9kZWZhdWx0X2NyZWF0ZUAxNgogICAgdHhuIE9uQ29tcGxldGlvbgogICAgIQogICAgYXNzZXJ0IC8vIE9uQ29tcGxldGlvbiBtdXN0IGJlIE5vT3AKICAgIHR4biBBcHBsaWNhdGlvbklECiAgICBhc3NlcnQKICAgIHB1c2hieXRlc3MgMHg3M2JjNjUwMSAweDIzODMxNTk3IDB4NzFmMDI1NzkgMHgzNmExOTMzNSAweGRiNmUwMTAyIDB4OWNlMDQ1MmQgMHg0NmZiOTM3MyAvLyBtZXRob2QgImF1dGhvcml6ZShhZGRyZXNzKXZvaWQiLCBtZXRob2QgInJldm9rZShhZGRyZXNzKXZvaWQiLCBtZXRob2QgInJlZ2lzdGVyX2JhdGNoKGJ5dGVbXSl1aW50NjQiLCBtZXRob2QgImxpbmtfYXNzZXQodWludDY0LHVpbnQ2NCl2b2lkIiwgbWV0aG9kICJyZWNvcmRfZXZlbnQodWludDY0LGJ5dGVbXSl2b2lkIiwgbWV0aG9kICJnZXRfYmF0Y2hfcmVjb3JkKHVpbnQ2NClieXRlW10iLCBtZXRob2QgImdldF9hc3NldF9mb3JfYmF0Y2godWludDY0KXVpbnQ2NCIKICAgIHR4bmEgQXBwbGljYXRpb25BcmdzIDAKICAgIG1hdGNoIGF1dGhvcml6ZSByZXZva2UgcmVnaXN0ZXJfYmF0Y2ggbGlua19hc3NldCByZWNvcmRfZXZlbnQgZ2V0X2JhdGNoX3JlY29yZCBnZXRfYXNzZXRfZm9yX2JhdGNoCiAgICBlcnIKCm1haW5fX19hbGdvcHlfZGVmYXVsdF9jcmVhdGVAMTY6CiAgICB0eG4gT25Db21wbGV0aW9uCiAgICAhCiAgICB0eG4gQXBwbGljYXRpb25JRAogICAgIQogICAgJiYKICAgIGFzc2VydCAvLyBPbkNvbXBsZXRpb24gbXVzdCBiZSBOb09wICYmIGNhbiBvbmx5IGNhbGwgd2hlbiBjcmVhdGluZwogICAgaW50Y18wIC8vIDEKICAgIHJldHVybgoKCi8vIHNtYXJ0X2NvbnRyYWN0cy5zdXBwbHlfY2hhaW5fdHJhY2VyLmNvbnRyYWN0LlN1cHBseUNoYWluVHJhY2VyLmF1dGhvcml6ZVtyb3V0aW5nXSgpIC0+IHZvaWQ6CmF1dGhvcml6ZToKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjIyCiAgICAvLyBAYWJpbWV0aG9kCiAgICB0eG5hIEFwcGxpY2F0aW9uQXJncyAxCiAgICBkdXAKICAgIGxlbgogICAgaW50Y18zIC8vIDMyCiAgICA9PQogICAgYXNzZXJ0IC8vIGludmFsaWQgbnVtYmVyIG9mIGJ5dGVzIGZvciBhcmM0LnN0YXRpY19hcnJheTxhcmM0LnVpbnQ4LCAzMj4KICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjI4CiAgICAvLyBhc3NlcnQgVHhuLnNlbmRlciA9PSBHbG9iYWwuY3JlYXRvcl9hZGRyZXNzLCAiT25seSBjcmVhdG9yIGNhbiBhdXRob3JpemUiCiAgICB0eG4gU2VuZGVyCiAgICBnbG9iYWwgQ3JlYXRvckFkZHJlc3MKICAgID09CiAgICBhc3NlcnQgLy8gT25seSBjcmVhdG9yIGNhbiBhdXRob3JpemUKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjI5CiAgICAvLyBzZWxmLmF1dGhvcml6ZWRbYWNjb3VudF0gPSBVSW50NjQoMSkKICAgIGJ5dGVjXzIgLy8gImF1dGhvcml6ZWQiCiAgICBzd2FwCiAgICBjb25jYXQKICAgIGludGNfMCAvLyAxCiAgICBpdG9iCiAgICBib3hfcHV0CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weToyMgogICAgLy8gQGFiaW1ldGhvZAogICAgaW50Y18wIC8vIDEKICAgIHJldHVybgoKCi8vIHNtYXJ0X2NvbnRyYWN0cy5zdXBwbHlfY2hhaW5fdHJhY2VyLmNvbnRyYWN0LlN1cHBseUNoYWluVHJhY2VyLnJldm9rZVtyb3V0aW5nXSgpIC0+IHZvaWQ6CnJldm9rZToKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjMxCiAgICAvLyBAYWJpbWV0aG9kCiAgICB0eG5hIEFwcGxpY2F0aW9uQXJncyAxCiAgICBkdXAKICAgIGxlbgogICAgaW50Y18zIC8vIDMyCiAgICA9PQogICAgYXNzZXJ0IC8vIGludmFsaWQgbnVtYmVyIG9mIGJ5dGVzIGZvciBhcmM0LnN0YXRpY19hcnJheTxhcmM0LnVpbnQ4LCAzMj4KICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjM2CiAgICAvLyBhc3NlcnQgVHhuLnNlbmRlciA9PSBHbG9iYWwuY3JlYXRvcl9hZGRyZXNzLCAiT25seSBjcmVhdG9yIGNhbiByZXZva2UiCiAgICB0eG4gU2VuZGVyCiAgICBnbG9iYWwgQ3JlYXRvckFkZHJlc3MKICAgID09CiAgICBhc3NlcnQgLy8gT25seSBjcmVhdG9yIGNhbiByZXZva2UKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjM4CiAgICAvLyBiYWxhbmNlLCBhZG1pbiA9IHNlbGYuYXV0aG9yaXplZC5tYXliZShhY2NvdW50KQogICAgYnl0ZWNfMiAvLyAiYXV0aG9yaXplZCIKICAgIHN3YXAKICAgIGNvbmNhdAogICAgZHVwCiAgICBib3hfbGVuCiAgICBidXJ5IDEKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjM5CiAgICAvLyBhc3NlcnQgYWRtaW4sICJBY2NvdW50IG5vdCBhdXRob3JpemVkIgogICAgYXNzZXJ0IC8vIEFjY291bnQgbm90IGF1dGhvcml6ZWQKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjQxCiAgICAvLyBkZWwgc2VsZi5hdXRob3JpemVkW2FjY291bnRdCiAgICBib3hfZGVsCiAgICBwb3AKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjMxCiAgICAvLyBAYWJpbWV0aG9kCiAgICBpbnRjXzAgLy8gMQogICAgcmV0dXJuCgoKLy8gc21hcnRfY29udHJhY3RzLnN1cHBseV9jaGFpbl90cmFjZXIuY29udHJhY3QuU3VwcGx5Q2hhaW5UcmFjZXIucmVnaXN0ZXJfYmF0Y2hbcm91dGluZ10oKSAtPiB2b2lkOgpyZWdpc3Rlcl9iYXRjaDoKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjQ3CiAgICAvLyBAYWJpbWV0aG9kCiAgICB0eG5hIEFwcGxpY2F0aW9uQXJncyAxCiAgICBkdXAKICAgIGludGNfMiAvLyAwCiAgICBleHRyYWN0X3VpbnQxNiAvLyBvbiBlcnJvcjogaW52YWxpZCBhcnJheSBsZW5ndGggaGVhZGVyCiAgICBwdXNoaW50IDIgLy8gMgogICAgKwogICAgZGlnIDEKICAgIGxlbgogICAgPT0KICAgIGFzc2VydCAvLyBpbnZhbGlkIG51bWJlciBvZiBieXRlcyBmb3IgYXJjNC5keW5hbWljX2FycmF5PGFyYzQudWludDg+CiAgICBleHRyYWN0IDIgMAogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6NTMKICAgIC8vIGFzc2VydCBUeG4uc2VuZGVyID09IEdsb2JhbC5jcmVhdG9yX2FkZHJlc3MsICJPbmx5IGNyZWF0b3IgY2FuIHJlZ2lzdGVyIGJhdGNoZXMiCiAgICB0eG4gU2VuZGVyCiAgICBnbG9iYWwgQ3JlYXRvckFkZHJlc3MKICAgID09CiAgICBhc3NlcnQgLy8gT25seSBjcmVhdG9yIGNhbiByZWdpc3RlciBiYXRjaGVzCiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo1NAogICAgLy8gYmF0Y2hfaWQgPSBzZWxmLnRvdGFsX2JhdGNoZXMudmFsdWUgKyBVSW50NjQoMSkKICAgIGludGNfMiAvLyAwCiAgICBieXRlY18xIC8vICJ0b3RhbF9iYXRjaGVzIgogICAgYXBwX2dsb2JhbF9nZXRfZXgKICAgIGFzc2VydCAvLyBjaGVjayBzZWxmLnRvdGFsX2JhdGNoZXMgZXhpc3RzCiAgICBpbnRjXzAgLy8gMQogICAgKwogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6NTUKICAgIC8vIHNlbGYuYmF0Y2hfcmVjb3Jkc1tiYXRjaF9pZF0gPSBmaXJzdF9yZWNvcmQKICAgIGR1cAogICAgaXRvYgogICAgYnl0ZWNfMCAvLyAiYmF0Y2hfcmVjb3JkcyIKICAgIGRpZyAxCiAgICBjb25jYXQKICAgIGR1cAogICAgYm94X2RlbAogICAgcG9wCiAgICB1bmNvdmVyIDMKICAgIGJveF9wdXQKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjU2CiAgICAvLyBzZWxmLnRvdGFsX2JhdGNoZXMudmFsdWUgPSBiYXRjaF9pZAogICAgYnl0ZWNfMSAvLyAidG90YWxfYmF0Y2hlcyIKICAgIHVuY292ZXIgMgogICAgYXBwX2dsb2JhbF9wdXQKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjQ3CiAgICAvLyBAYWJpbWV0aG9kCiAgICBieXRlY18zIC8vIDB4MTUxZjdjNzUKICAgIHN3YXAKICAgIGNvbmNhdAogICAgbG9nCiAgICBpbnRjXzAgLy8gMQogICAgcmV0dXJuCgoKLy8gc21hcnRfY29udHJhY3RzLnN1cHBseV9jaGFpbl90cmFjZXIuY29udHJhY3QuU3VwcGx5Q2hhaW5UcmFjZXIubGlua19hc3NldFtyb3V0aW5nXSgpIC0+IHZvaWQ6CmxpbmtfYXNzZXQ6CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo1OQogICAgLy8gQGFiaW1ldGhvZAogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQogICAgZHVwCiAgICBsZW4KICAgIGludGNfMSAvLyA4CiAgICA9PQogICAgYXNzZXJ0IC8vIGludmFsaWQgbnVtYmVyIG9mIGJ5dGVzIGZvciBhcmM0LnVpbnQ2NAogICAgYnRvaQogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMgogICAgZHVwCiAgICBsZW4KICAgIGludGNfMSAvLyA4CiAgICA9PQogICAgYXNzZXJ0IC8vIGludmFsaWQgbnVtYmVyIG9mIGJ5dGVzIGZvciBhcmM0LnVpbnQ2NAogICAgYnRvaQogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6NjUKICAgIC8vIGFzc2VydCBUeG4uc2VuZGVyID09IEdsb2JhbC5jcmVhdG9yX2FkZHJlc3MsICJPbmx5IGNyZWF0b3IgY2FuIGxpbmsgYXNzZXRzIgogICAgdHhuIFNlbmRlcgogICAgZ2xvYmFsIENyZWF0b3JBZGRyZXNzCiAgICA9PQogICAgYXNzZXJ0IC8vIE9ubHkgY3JlYXRvciBjYW4gbGluayBhc3NldHMKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjY3CiAgICAvLyBpZCwgZXhpc3RzID0gc2VsZi5iYXRjaF9yZWNvcmRzLm1heWJlKGJhdGNoX2lkKQogICAgc3dhcAogICAgaXRvYgogICAgYnl0ZWNfMCAvLyAiYmF0Y2hfcmVjb3JkcyIKICAgIGRpZyAxCiAgICBjb25jYXQKICAgIGJveF9sZW4KICAgIGJ1cnkgMQogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6NjgKICAgIC8vIGFzc2VydCBleGlzdHMsICJCYXRjaCBub3QgZm91bmQiCiAgICBhc3NlcnQgLy8gQmF0Y2ggbm90IGZvdW5kCiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo3MAogICAgLy8gc2VsZi5iYXRjaF9hc3NldHNbYmF0Y2hfaWRdID0gYXNzZXRfaWQKICAgIGJ5dGVjIDQgLy8gImJhdGNoX2Fzc2V0cyIKICAgIHN3YXAKICAgIGNvbmNhdAogICAgc3dhcAogICAgaXRvYgogICAgYm94X3B1dAogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6NTkKICAgIC8vIEBhYmltZXRob2QKICAgIGludGNfMCAvLyAxCiAgICByZXR1cm4KCgovLyBzbWFydF9jb250cmFjdHMuc3VwcGx5X2NoYWluX3RyYWNlci5jb250cmFjdC5TdXBwbHlDaGFpblRyYWNlci5yZWNvcmRfZXZlbnRbcm91dGluZ10oKSAtPiB2b2lkOgpyZWNvcmRfZXZlbnQ6CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo3MgogICAgLy8gQGFiaW1ldGhvZAogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQogICAgZHVwCiAgICBsZW4KICAgIGludGNfMSAvLyA4CiAgICA9PQogICAgYXNzZXJ0IC8vIGludmFsaWQgbnVtYmVyIG9mIGJ5dGVzIGZvciBhcmM0LnVpbnQ2NAogICAgYnRvaQogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMgogICAgZHVwCiAgICBpbnRjXzIgLy8gMAogICAgZXh0cmFjdF91aW50MTYgLy8gb24gZXJyb3I6IGludmFsaWQgYXJyYXkgbGVuZ3RoIGhlYWRlcgogICAgcHVzaGludCAyIC8vIDIKICAgICsKICAgIGRpZyAxCiAgICBsZW4KICAgID09CiAgICBhc3NlcnQgLy8gaW52YWxpZCBudW1iZXIgb2YgYnl0ZXMgZm9yIGFyYzQuZHluYW1pY19hcnJheTxhcmM0LnVpbnQ4PgogICAgZXh0cmFjdCAyIDAKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5Ojc4CiAgICAvLyBiYWxhbmNlLCBhZG1pbiA9IHNlbGYuYXV0aG9yaXplZC5tYXliZShUeG4uc2VuZGVyKQogICAgYnl0ZWNfMiAvLyAiYXV0aG9yaXplZCIKICAgIHR4biBTZW5kZXIKICAgIGNvbmNhdAogICAgYm94X2xlbgogICAgYnVyeSAxCiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo3OQogICAgLy8gYXNzZXJ0IGFkbWluLCAiVW5hdXRob3JpemVkIHBhcnRpY2lwYW50IgogICAgYXNzZXJ0IC8vIFVuYXV0aG9yaXplZCBwYXJ0aWNpcGFudAogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6ODEKICAgIC8vIG9sZF9kYXRhLCBleGlzdHMgPSBzZWxmLmJhdGNoX3JlY29yZHMubWF5YmUoYmF0Y2hfaWQpCiAgICBzd2FwCiAgICBpdG9iCiAgICBieXRlY18wIC8vICJiYXRjaF9yZWNvcmRzIgogICAgZGlnIDEKICAgIGNvbmNhdAogICAgZHVwCiAgICBib3hfZ2V0CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo4MgogICAgLy8gYXNzZXJ0IGV4aXN0cywgIkJhdGNoIG5vdCBmb3VuZCIKICAgIGFzc2VydCAvLyBCYXRjaCBub3QgZm91bmQKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5Ojg0CiAgICAvLyBhc3NldF9pZCwgYXNzZXRfbGlua2VkID0gc2VsZi5iYXRjaF9hc3NldHMubWF5YmUoYmF0Y2hfaWQpCiAgICBieXRlYyA0IC8vICJiYXRjaF9hc3NldHMiCiAgICB1bmNvdmVyIDMKICAgIGNvbmNhdAogICAgYm94X2xlbgogICAgYnVyeSAxCiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo4NQogICAgLy8gYXNzZXJ0IGFzc2V0X2xpbmtlZCwgIk5vIGFzc2V0IGxpbmtlZCB0byB0aGlzIGJhdGNoIgogICAgYXNzZXJ0IC8vIE5vIGFzc2V0IGxpbmtlZCB0byB0aGlzIGJhdGNoCiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weTo4Ny04OAogICAgLy8gIyBDb25jYXRlbmF0ZSBuZXcgZGF0YSB0byBleGlzdGluZyByZWNvcmQgc3RyaW5nCiAgICAvLyBjb21iaW5lZCA9IG9sZF9kYXRhICsgYiIgfCAiICsgbmV3X2RhdGEKICAgIHB1c2hieXRlcyAweDIwN2MyMAogICAgY29uY2F0CiAgICB1bmNvdmVyIDIKICAgIGNvbmNhdAogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6ODkKICAgIC8vIHNlbGYuYmF0Y2hfcmVjb3Jkc1tiYXRjaF9pZF0gPSBjb21iaW5lZAogICAgZGlnIDEKICAgIGJveF9kZWwKICAgIHBvcAogICAgYm94X3B1dAogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6NzIKICAgIC8vIEBhYmltZXRob2QKICAgIGludGNfMCAvLyAxCiAgICByZXR1cm4KCgovLyBzbWFydF9jb250cmFjdHMuc3VwcGx5X2NoYWluX3RyYWNlci5jb250cmFjdC5TdXBwbHlDaGFpblRyYWNlci5nZXRfYmF0Y2hfcmVjb3JkW3JvdXRpbmddKCkgLT4gdm9pZDoKZ2V0X2JhdGNoX3JlY29yZDoKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5Ojk1CiAgICAvLyBAYWJpbWV0aG9kCiAgICB0eG5hIEFwcGxpY2F0aW9uQXJncyAxCiAgICBkdXAKICAgIGxlbgogICAgaW50Y18xIC8vIDgKICAgID09CiAgICBhc3NlcnQgLy8gaW52YWxpZCBudW1iZXIgb2YgYnl0ZXMgZm9yIGFyYzQudWludDY0CiAgICBidG9pCiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weToxMDAKICAgIC8vIHJlY29yZCwgZXhpc3RzID0gc2VsZi5iYXRjaF9yZWNvcmRzLm1heWJlKGJhdGNoX2lkKQogICAgaXRvYgogICAgYnl0ZWNfMCAvLyAiYmF0Y2hfcmVjb3JkcyIKICAgIHN3YXAKICAgIGNvbmNhdAogICAgYm94X2dldAogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6MTAxCiAgICAvLyBhc3NlcnQgZXhpc3RzLCAiQmF0Y2ggbm90IGZvdW5kIgogICAgYXNzZXJ0IC8vIEJhdGNoIG5vdCBmb3VuZAogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6OTUKICAgIC8vIEBhYmltZXRob2QKICAgIGR1cAogICAgbGVuCiAgICBpdG9iCiAgICBleHRyYWN0IDYgMgogICAgc3dhcAogICAgY29uY2F0CiAgICBieXRlY18zIC8vIDB4MTUxZjdjNzUKICAgIHN3YXAKICAgIGNvbmNhdAogICAgbG9nCiAgICBpbnRjXzAgLy8gMQogICAgcmV0dXJuCgoKLy8gc21hcnRfY29udHJhY3RzLnN1cHBseV9jaGFpbl90cmFjZXIuY29udHJhY3QuU3VwcGx5Q2hhaW5UcmFjZXIuZ2V0X2Fzc2V0X2Zvcl9iYXRjaFtyb3V0aW5nXSgpIC0+IHZvaWQ6CmdldF9hc3NldF9mb3JfYmF0Y2g6CiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weToxMDQKICAgIC8vIEBhYmltZXRob2QKICAgIHR4bmEgQXBwbGljYXRpb25BcmdzIDEKICAgIGR1cAogICAgbGVuCiAgICBpbnRjXzEgLy8gOAogICAgPT0KICAgIGFzc2VydCAvLyBpbnZhbGlkIG51bWJlciBvZiBieXRlcyBmb3IgYXJjNC51aW50NjQKICAgIGJ0b2kKICAgIC8vIHNtYXJ0X2NvbnRyYWN0cy9zdXBwbHlfY2hhaW5fdHJhY2VyL2NvbnRyYWN0LnB5OjEwOQogICAgLy8gYXNzZXRfaWQsIGV4aXN0cyA9IHNlbGYuYmF0Y2hfYXNzZXRzLm1heWJlKGJhdGNoX2lkKQogICAgaXRvYgogICAgYnl0ZWMgNCAvLyAiYmF0Y2hfYXNzZXRzIgogICAgc3dhcAogICAgY29uY2F0CiAgICBib3hfZ2V0CiAgICBzd2FwCiAgICBidG9pCiAgICAvLyBzbWFydF9jb250cmFjdHMvc3VwcGx5X2NoYWluX3RyYWNlci9jb250cmFjdC5weToxMTAKICAgIC8vIGFzc2VydCBleGlzdHMsICJObyBhc3NldCBsaW5rZWQgdG8gdGhpcyBiYXRjaCIKICAgIHN3YXAKICAgIGFzc2VydCAvLyBObyBhc3NldCBsaW5rZWQgdG8gdGhpcyBiYXRjaAogICAgLy8gc21hcnRfY29udHJhY3RzL3N1cHBseV9jaGFpbl90cmFjZXIvY29udHJhY3QucHk6MTA0CiAgICAvLyBAYWJpbWV0aG9kCiAgICBpdG9iCiAgICBieXRlY18zIC8vIDB4MTUxZjdjNzUKICAgIHN3YXAKICAgIGNvbmNhdAogICAgbG9nCiAgICBpbnRjXzAgLy8gMQogICAgcmV0dXJuCg==", "clear": "I3ByYWdtYSB2ZXJzaW9uIDExCiNwcmFnbWEgdHlwZXRyYWNrIGZhbHNlCgovLyBhbGdvcHkuYXJjNC5BUkM0Q29udHJhY3QuY2xlYXJfc3RhdGVfcHJvZ3JhbSgpIC0+IHVpbnQ2NDoKbWFpbjoKICAgIHB1c2hpbnQgMSAvLyAxCiAgICByZXR1cm4K"}, "sourceInfo": {"approval": {"pcOffsetMethod": "none", "sourceInfo": [{"pc": [196], "errorMessage": "Account not authorized"}, {"pc": [285, 337, 377], "errorMessage": "Batch not found"}, {"pc": [346, 410], "errorMessage": "No asset linked to this batch"}, {"pc": [82], "errorMessage": "OnCompletion must be NoOp"}, {"pc": [150], "errorMessage": "OnCompletion must be NoOp && can only call when creating"}, {"pc": [166], "errorMessage": "Only creator can authorize"}, {"pc": [275], "errorMessage": "Only creator can link assets"}, {"pc": [223], "errorMessage": "Only creator can register batches"}, {"pc": [188], "errorMessage": "Only creator can revoke"}, {"pc": [328], "errorMessage": "Unauthorized participant"}, {"pc": [227], "errorMessage": "check self.total_batches exists"}, {"pc": [206, 309], "errorMessage": "invalid array length header"}, {"pc": [214, 317], "errorMessage": "invalid number of bytes for arc4.dynamic_array<arc4.uint8>"}, {"pc": [160, 182], "errorMessage": "invalid number of bytes for arc4.static_array<arc4.uint8, 32>"}, {"pc": [259, 268, 302, 370, 399], "errorMessage": "invalid number of bytes for arc4.uint64"}]}, "clear": {"pcOffsetMethod": "none", "sourceInfo": []}}, "templateVariables": {}}"""
 APP_SPEC = algokit_utils.Arc56Contract.from_json(_APP_SPEC_JSON)
 
 def _parse_abi_args(args: object | None = None) -> list[object] | None:
@@ -92,6 +92,16 @@ class RegisterBatchArgs:
         return "register_batch(byte[])uint64"
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
+class LinkAssetArgs:
+    """Dataclass for link_asset arguments"""
+    batch_id: int
+    asset_id: int
+
+    @property
+    def abi_method_signature(self) -> str:
+        return "link_asset(uint64,uint64)void"
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
 class RecordEventArgs:
     """Dataclass for record_event arguments"""
     batch_id: int
@@ -109,6 +119,15 @@ class GetBatchRecordArgs:
     @property
     def abi_method_signature(self) -> str:
         return "get_batch_record(uint64)byte[]"
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class GetAssetForBatchArgs:
+    """Dataclass for get_asset_for_batch arguments"""
+    batch_id: int
+
+    @property
+    def abi_method_signature(self) -> str:
+        return "get_asset_for_batch(uint64)uint64"
 
 
 class SupplyChainTracerParams:
@@ -154,6 +173,19 @@ class SupplyChainTracerParams:
             "args": method_args,
         }))
 
+    def link_asset(
+        self,
+        args: tuple[int, int] | LinkAssetArgs,
+        params: algokit_utils.CommonAppCallParams | None = None
+    ) -> algokit_utils.AppCallMethodCallParams:
+        method_args = _parse_abi_args(args)
+        params = params or algokit_utils.CommonAppCallParams()
+        return self.app_client.params.call(algokit_utils.AppClientMethodCallParams(**{
+            **dataclasses.asdict(params),
+            "method": "link_asset(uint64,uint64)void",
+            "args": method_args,
+        }))
+
     def record_event(
         self,
         args: tuple[int, bytes | str] | RecordEventArgs,
@@ -177,6 +209,19 @@ class SupplyChainTracerParams:
         return self.app_client.params.call(algokit_utils.AppClientMethodCallParams(**{
             **dataclasses.asdict(params),
             "method": "get_batch_record(uint64)byte[]",
+            "args": method_args,
+        }))
+
+    def get_asset_for_batch(
+        self,
+        args: tuple[int] | GetAssetForBatchArgs,
+        params: algokit_utils.CommonAppCallParams | None = None
+    ) -> algokit_utils.AppCallMethodCallParams:
+        method_args = _parse_abi_args(args)
+        params = params or algokit_utils.CommonAppCallParams()
+        return self.app_client.params.call(algokit_utils.AppClientMethodCallParams(**{
+            **dataclasses.asdict(params),
+            "method": "get_asset_for_batch(uint64)uint64",
             "args": method_args,
         }))
 
@@ -234,6 +279,19 @@ class SupplyChainTracerCreateTransactionParams:
             "args": method_args,
         }))
 
+    def link_asset(
+        self,
+        args: tuple[int, int] | LinkAssetArgs,
+        params: algokit_utils.CommonAppCallParams | None = None
+    ) -> algokit_utils.BuiltTransactions:
+        method_args = _parse_abi_args(args)
+        params = params or algokit_utils.CommonAppCallParams()
+        return self.app_client.create_transaction.call(algokit_utils.AppClientMethodCallParams(**{
+            **dataclasses.asdict(params),
+            "method": "link_asset(uint64,uint64)void",
+            "args": method_args,
+        }))
+
     def record_event(
         self,
         args: tuple[int, bytes | str] | RecordEventArgs,
@@ -257,6 +315,19 @@ class SupplyChainTracerCreateTransactionParams:
         return self.app_client.create_transaction.call(algokit_utils.AppClientMethodCallParams(**{
             **dataclasses.asdict(params),
             "method": "get_batch_record(uint64)byte[]",
+            "args": method_args,
+        }))
+
+    def get_asset_for_batch(
+        self,
+        args: tuple[int] | GetAssetForBatchArgs,
+        params: algokit_utils.CommonAppCallParams | None = None
+    ) -> algokit_utils.BuiltTransactions:
+        method_args = _parse_abi_args(args)
+        params = params or algokit_utils.CommonAppCallParams()
+        return self.app_client.create_transaction.call(algokit_utils.AppClientMethodCallParams(**{
+            **dataclasses.asdict(params),
+            "method": "get_asset_for_batch(uint64)uint64",
             "args": method_args,
         }))
 
@@ -323,6 +394,22 @@ class SupplyChainTracerSend:
         parsed_response = response
         return typing.cast(algokit_utils.SendAppTransactionResult[int], parsed_response)
 
+    def link_asset(
+        self,
+        args: tuple[int, int] | LinkAssetArgs,
+        params: algokit_utils.CommonAppCallParams | None = None,
+        send_params: algokit_utils.SendParams | None = None
+    ) -> algokit_utils.SendAppTransactionResult[None]:
+        method_args = _parse_abi_args(args)
+        params = params or algokit_utils.CommonAppCallParams()
+        response = self.app_client.send.call(algokit_utils.AppClientMethodCallParams(**{
+            **dataclasses.asdict(params),
+            "method": "link_asset(uint64,uint64)void",
+            "args": method_args,
+        }), send_params=send_params)
+        parsed_response = response
+        return typing.cast(algokit_utils.SendAppTransactionResult[None], parsed_response)
+
     def record_event(
         self,
         args: tuple[int, bytes | str] | RecordEventArgs,
@@ -354,6 +441,22 @@ class SupplyChainTracerSend:
         }), send_params=send_params)
         parsed_response = response
         return typing.cast(algokit_utils.SendAppTransactionResult[bytes], parsed_response)
+
+    def get_asset_for_batch(
+        self,
+        args: tuple[int] | GetAssetForBatchArgs,
+        params: algokit_utils.CommonAppCallParams | None = None,
+        send_params: algokit_utils.SendParams | None = None
+    ) -> algokit_utils.SendAppTransactionResult[int]:
+        method_args = _parse_abi_args(args)
+        params = params or algokit_utils.CommonAppCallParams()
+        response = self.app_client.send.call(algokit_utils.AppClientMethodCallParams(**{
+            **dataclasses.asdict(params),
+            "method": "get_asset_for_batch(uint64)uint64",
+            "args": method_args,
+        }), send_params=send_params)
+        parsed_response = response
+        return typing.cast(algokit_utils.SendAppTransactionResult[int], parsed_response)
 
     def clear_state(
         self,
@@ -450,6 +553,15 @@ class _BoxState:
         return _MapState(
             self.app_client.state.box,
             "batch_records",
+            None
+        )
+
+    @property
+    def batch_assets(self) -> "_MapState[int, int]":
+        """Get values from the batch_assets map in box state"""
+        return _MapState(
+            self.app_client.state.box,
+            "batch_assets",
             None
         )
 
@@ -661,6 +773,12 @@ class SupplyChainTracerClient:
     @typing.overload
     def decode_return_value(
         self,
+        method: typing.Literal["link_asset(uint64,uint64)void"],
+        return_value: algokit_utils.ABIReturn | None
+    ) -> None: ...
+    @typing.overload
+    def decode_return_value(
+        self,
         method: typing.Literal["record_event(uint64,byte[])void"],
         return_value: algokit_utils.ABIReturn | None
     ) -> None: ...
@@ -670,6 +788,12 @@ class SupplyChainTracerClient:
         method: typing.Literal["get_batch_record(uint64)byte[]"],
         return_value: algokit_utils.ABIReturn | None
     ) -> bytes | None: ...
+    @typing.overload
+    def decode_return_value(
+        self,
+        method: typing.Literal["get_asset_for_batch(uint64)uint64"],
+        return_value: algokit_utils.ABIReturn | None
+    ) -> int | None: ...
     @typing.overload
     def decode_return_value(
         self,
@@ -912,6 +1036,26 @@ class SupplyChainTracerFactoryCreateParams:
             compilation_params=compilation_params
         )
 
+    def link_asset(
+        self,
+        args: tuple[int, int] | LinkAssetArgs,
+        *,
+        params: algokit_utils.CommonAppCallCreateParams | None = None,
+        compilation_params: algokit_utils.AppClientCompilationParams | None = None
+    ) -> algokit_utils.AppCreateMethodCallParams:
+        """Creates a new instance using the link_asset(uint64,uint64)void ABI method"""
+        params = params or algokit_utils.CommonAppCallCreateParams()
+        return self.app_factory.params.create(
+            algokit_utils.AppFactoryCreateMethodCallParams(
+                **{
+                **dataclasses.asdict(params),
+                "method": "link_asset(uint64,uint64)void",
+                "args": _parse_abi_args(args),
+                }
+            ),
+            compilation_params=compilation_params
+        )
+
     def record_event(
         self,
         args: tuple[int, bytes | str] | RecordEventArgs,
@@ -946,6 +1090,26 @@ class SupplyChainTracerFactoryCreateParams:
                 **{
                 **dataclasses.asdict(params),
                 "method": "get_batch_record(uint64)byte[]",
+                "args": _parse_abi_args(args),
+                }
+            ),
+            compilation_params=compilation_params
+        )
+
+    def get_asset_for_batch(
+        self,
+        args: tuple[int] | GetAssetForBatchArgs,
+        *,
+        params: algokit_utils.CommonAppCallCreateParams | None = None,
+        compilation_params: algokit_utils.AppClientCompilationParams | None = None
+    ) -> algokit_utils.AppCreateMethodCallParams:
+        """Creates a new instance using the get_asset_for_batch(uint64)uint64 ABI method"""
+        params = params or algokit_utils.CommonAppCallCreateParams()
+        return self.app_factory.params.create(
+            algokit_utils.AppFactoryCreateMethodCallParams(
+                **{
+                **dataclasses.asdict(params),
+                "method": "get_asset_for_batch(uint64)uint64",
                 "args": _parse_abi_args(args),
                 }
             ),
@@ -1107,6 +1271,24 @@ class SupplyChainTracerComposer:
         )
         return self
 
+    def link_asset(
+        self,
+        args: tuple[int, int] | LinkAssetArgs,
+        params: algokit_utils.CommonAppCallParams | None = None
+    ) -> "SupplyChainTracerComposer":
+        self._composer.add_app_call_method_call(
+            self.client.params.link_asset(
+                args=args,
+                params=params,
+            )
+        )
+        self._result_mappers.append(
+            lambda v: self.client.decode_return_value(
+                "link_asset(uint64,uint64)void", v
+            )
+        )
+        return self
+
     def record_event(
         self,
         args: tuple[int, bytes | str] | RecordEventArgs,
@@ -1139,6 +1321,24 @@ class SupplyChainTracerComposer:
         self._result_mappers.append(
             lambda v: self.client.decode_return_value(
                 "get_batch_record(uint64)byte[]", v
+            )
+        )
+        return self
+
+    def get_asset_for_batch(
+        self,
+        args: tuple[int] | GetAssetForBatchArgs,
+        params: algokit_utils.CommonAppCallParams | None = None
+    ) -> "SupplyChainTracerComposer":
+        self._composer.add_app_call_method_call(
+            self.client.params.get_asset_for_batch(
+                args=args,
+                params=params,
+            )
+        )
+        self._result_mappers.append(
+            lambda v: self.client.decode_return_value(
+                "get_asset_for_batch(uint64)uint64", v
             )
         )
         return self
